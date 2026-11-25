@@ -37,6 +37,14 @@
   --stamp: #c7a6d4;
   color-scheme: dark;
 }
+/* On dark, the primary button is the off-white of the ramp; the rose stays for links */
+:root[data-theme="dark"] .btn-primary {
+  background: var(--ink);
+  color: var(--bg);
+}
+:root[data-theme="dark"] .btn-primary:hover {
+  background: #ffffff;
+}
 
 *,
 *::before,
