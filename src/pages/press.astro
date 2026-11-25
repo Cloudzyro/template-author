@@ -1,0 +1,156 @@
+---
+import Base from "../layouts/Base.astro";
+import DateStamp from "../components/DateStamp.astro";
+import { author, press, books } from "../data/site";
+
+const next = books.find((b) => b.upcoming) ?? books[0];
+---
+
+<Base title="Press" description={`Press kit for ${author.name}: bios, photo and contacts for the publicist and agent.`}>
+  <header class="wrap head">
+    <h1 class="display h1">Press kit</h1>
+    <p class="lede">{press.intro}</p>
+  </header>
+
+  <section class="wrap contacts" aria-label="Contacts">
+    <div>
+      <h2>Publicity</h2>
+      <p>{author.publicist.name}, {author.publicist.house}</p>
+      <a class="text-link" href={`mailto:${author.publicist.email}`}>{author.publicist.email}</a>
+    </div>
+    <div>
+      <h2>Rights and permissions</h2>
+      <p>{author.agent.name}, {author.agent.agency}</p>
+      <a class="text-link" href={`mailto:${author.agent.email}`}>{author.agent.email}</a>
+    </div>
+    <div>
+      <h2>New book</h2>
+      <p><a class="text-link" href={`/books/${next.slug}`}>{next.title}</a>, {next.publisher}</p>
+      <DateStamp date={next.release} label="Out" />
+    </div>
+  </section>
+
+  <section class="wrap bios" aria-label="Bios">
+    <div>
+      <h2 class="display h2">Short bio</h2>
+      <p>{author.shortBio}</p>
+    </div>
+    <div>
+      <h2 class="display h2">Long bio</h2>
+      {author.longBio.map((p) => <p>{p}</p>)}
+    </div>
+  </section>
+
+  <section class="wrap lists" aria-label="Assets and interviews">
+    <div>
+      <h2 class="display h2">Photos and covers</h2>
+      <ul class="assets">
+        {
+          press.assets.map((a) => (
+            <li>
+              <span>{a.label}</span>
+              <span class="muted">{a.note}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <div>
+      <h2 class="display h2">Interviews</h2>
+      <ul class="interviews">
+        {
+          press.interviews.map((i) => (
+            <li>
+              <DateStamp date={i.date} />
+              <div>
+                <p>{i.title}</p>
+                <p class="muted">{i.outlet}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="muted small">Outlets are fictional, written for this template.</p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding-block: clamp(40px, 6vw, 72px) 48px;
+  }
+  .lede {
+    margin-top: 12px;
+  }
+  .contacts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    padding-block: 32px;
+    border-block: 1px solid var(--line-strong);
+  }
+  .contacts h2 {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+  .contacts div {
+    display: grid;
+    gap: 6px;
+    justify-items: start;
+    align-content: start;
+  }
+  .bios,
+  .lists {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: clamp(32px, 6vw, 96px);
+    padding-block: 64px;
+  }
+  .bios div {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+    max-width: 38rem;
+  }
+  .lists {
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--line);
+    padding-bottom: 112px;
+  }
+  .lists h2 {
+    margin-bottom: 20px;
+  }
+  .assets li {
+    display: grid;
+    gap: 2px;
+    padding-block: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .assets .muted {
+    font-size: 15px;
+  }
+  .interviews li {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 20px;
+    align-items: center;
+    padding-block: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .interviews .muted {
+    font-size: 15px;
+  }
+  .small {
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  @media (max-width: 860px) {
+    .contacts,
+    .bios,
+    .lists {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

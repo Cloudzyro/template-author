@@ -1,0 +1,225 @@
+---
+import "@fontsource-variable/eb-garamond";
+import "@fontsource-variable/karla";
+import "../styles/global.css";
+import { author, nav } from "../data/site";
+
+interface Props {
+  title?: string;
+  description?: string;
+  schema?: Record<string, unknown>;
+}
+
+const { title, description = author.description, schema } = Astro.props;
+const fullTitle = title ? `${title} | ${author.name}` : `${author.name} | ${author.tagline}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL("/og.png", Astro.site);
+const person = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: author.name,
+  jobTitle: author.tagline,
+  description: author.shortBio,
+  url: Astro.site?.toString(),
+  sameAs: author.socials.map((s) => s.href),
+};
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#faf8f4" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={author.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify(schema ?? person)} />
+    <script is:inline>
+      // Light unless the reader chose dark on an earlier visit
+      try {
+        if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark";
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="wrap site-header">
+      <a class="logo display" href="/">{author.name}</a>
+      <nav aria-label="Main">
+        <ul>
+          {
+            nav.map((n) => (
+              <li>
+                <a href={n.href} aria-current={path === n.href || path.startsWith(n.href + "/") ? "page" : undefined}>
+                  {n.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+      <button class="theme" type="button" aria-pressed="false" data-theme-toggle>
+        <span class="sr">Dark mode</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"></path>
+        </svg>
+      </button>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="wrap grid">
+        <p class="display f-name">{author.name}</p>
+        <ul>
+          {nav.map((n) => <li><a href={n.href}>{n.label}</a></li>)}
+        </ul>
+        <ul>
+          {author.socials.map((s) => <li><a href={s.href} rel="noopener">{s.label}</a></li>)}
+          <li><a href={`mailto:${author.email}`}>{author.email}</a></li>
+        </ul>
+      </div>
+      <p class="wrap legal">&copy; {new Date().getFullYear()} {author.name}</p>
+    </footer>
+    <script>
+      const btn = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
+      const root = document.documentElement;
+      const sync = () => {
+        btn?.setAttribute("aria-pressed", String(root.dataset.theme === "dark"));
+      };
+      sync();
+      btn?.addEventListener("click", () => {
+        const dark = root.dataset.theme !== "dark";
+        if (dark) root.dataset.theme = "dark";
+        else delete root.dataset.theme;
+        try {
+          localStorage.setItem("theme", dark ? "dark" : "light");
+        } catch {
+          // Storage can be blocked; the choice then lasts for this page only
+        }
+        sync();
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    min-height: 80px;
+  }
+  .logo {
+    font-size: 26px;
+    text-decoration: none;
+    margin-right: auto;
+  }
+  nav ul {
+    display: flex;
+    gap: 24px;
+  }
+  nav a {
+    color: var(--ink-2);
+    text-decoration: none;
+    font-size: 16px;
+    padding-block: 4px;
+    border-bottom: 1px solid transparent;
+    transition: color 150ms var(--ease), border-color 150ms var(--ease);
+  }
+  nav a:hover {
+    color: var(--ink);
+  }
+  nav a[aria-current="page"] {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .theme {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: color 150ms var(--ease), border-color 150ms var(--ease);
+  }
+  .theme:hover,
+  .theme[aria-pressed="true"] {
+    color: var(--ink);
+    border-color: var(--ink-3);
+  }
+  .site-footer {
+    margin-top: 0;
+    padding-top: 56px;
+    border-top: 1px solid var(--line-strong);
+    font-size: 15px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 32px;
+  }
+  .f-name {
+    font-size: 28px;
+  }
+  .site-footer ul {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+  }
+  .site-footer a {
+    text-decoration: none;
+    color: var(--ink-2);
+  }
+  .site-footer a:hover {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+  .legal {
+    margin-top: 48px;
+    padding-block: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-3);
+    font-size: 14px;
+  }
+  @media (max-width: 860px) {
+    .site-header {
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      padding-block: 16px 12px;
+    }
+    .logo {
+      font-size: 24px;
+    }
+    nav {
+      order: 3;
+      width: 100%;
+      overflow-x: auto;
+    }
+    nav ul {
+      gap: 18px;
+    }
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .f-name {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

@@ -1,0 +1,58 @@
+---
+import Base from "../layouts/Base.astro";
+import EventList from "../components/EventList.astro";
+import { author } from "../data/site";
+import { upcoming, past } from "../lib/events";
+
+const schema = {
+  "@context": "https://schema.org",
+  "@graph": upcoming.map((e) => ({
+    "@type": "Event",
+    name: e.title,
+    startDate: e.date,
+    location: { "@type": "Place", name: e.venue, address: e.city },
+    performer: { "@type": "Person", name: author.name },
+  })),
+};
+---
+
+<Base title="Events" description={`Readings, signings and conversations with ${author.name}.`} schema={schema}>
+  <header class="wrap head">
+    <h1 class="display h1">Events</h1>
+    <p class="lede">
+      Readings, signings and conversations. To invite Marian to a bookstore, library or festival, write to <a class="text-link" href={`mailto:${author.publicist.email}`}>{author.publicist.email}</a>.
+    </p>
+  </header>
+
+  <section class="wrap" aria-labelledby="up-title">
+    <h2 id="up-title" class="display h2">Upcoming</h2>
+    {upcoming.length ? <EventList list={upcoming} /> : <p class="muted">No events planned right now. The newsletter announces new ones first.</p>}
+  </section>
+
+  {
+    past.length > 0 && (
+      <section class="wrap past" aria-labelledby="past-title">
+        <h2 id="past-title" class="display h2">Past</h2>
+        <EventList list={past} past />
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .head {
+    padding-block: clamp(40px, 6vw, 72px) 48px;
+  }
+  .lede {
+    margin-top: 12px;
+  }
+  section h2 {
+    margin-bottom: 20px;
+  }
+  .past {
+    padding-block: 80px 112px;
+  }
+  section:not(.past) {
+    padding-bottom: 16px;
+  }
+</style>

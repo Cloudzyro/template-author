@@ -1,0 +1,105 @@
+---
+// Posts the email to PUBLIC_NEWSLETTER_ENDPOINT (Buttondown, ConvertKit, Formspree or similar),
+// falling back to PUBLIC_FORM_ENDPOINT, then to opening the visitor's email app.
+import { author, newsletter } from "../data/site";
+
+interface Props {
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+const endpoint = import.meta.env.PUBLIC_NEWSLETTER_ENDPOINT || import.meta.env.PUBLIC_FORM_ENDPOINT || "";
+const subject = `Newsletter sign-up for ${author.name}`;
+const id = `nl-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<form
+  class:list={["newsletter", { compact }]}
+  method="post"
+  action={endpoint || `mailto:${author.email}`}
+  data-endpoint={endpoint}
+  data-email={author.email}
+  data-subject={subject}
+>
+  <input type="hidden" name="_subject" value={subject} />
+  <label for={id} class="lbl">Email address</label>
+  <div class="row">
+    <input id={id} name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+    <button class="btn btn-primary" type="submit">Subscribe</button>
+  </div>
+  <p class="small muted">
+    {endpoint ? newsletter.privacy : `Sign-up isn't connected yet, so this opens your email app. ${newsletter.privacy}`}
+  </p>
+  <p class="status" role="status" aria-live="polite"></p>
+</form>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>("form.newsletter").forEach((form) => {
+    const status = form.querySelector<HTMLElement>(".status")!;
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const { endpoint, email, subject } = form.dataset;
+      const data = new FormData(form);
+      if (!endpoint) {
+        window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject ?? "")}&body=${encodeURIComponent(`Please add ${data.get("email")} to the newsletter.`)}`;
+        status.textContent = "Your email app should open with the request filled in.";
+        return;
+      }
+      const button = form.querySelector<HTMLButtonElement>("button[type=submit]")!;
+      button.disabled = true;
+      status.textContent = "Subscribing";
+      try {
+        const res = await fetch(endpoint, { method: "POST", body: data, headers: { Accept: "application/json" } });
+        if (!res.ok) throw new Error(String(res.status));
+        form.reset();
+        status.textContent = "Thank you. The next letter will find you.";
+      } catch {
+        status.textContent = "Sorry, that didn't go through. Please try again in a moment.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script>
+
+<style>
+  .newsletter {
+    display: grid;
+    gap: 8px;
+    max-width: 480px;
+  }
+  .lbl {
+    font-size: 14px;
+    color: var(--ink-2);
+  }
+  .row {
+    display: flex;
+    gap: 8px;
+  }
+  input {
+    flex: 1;
+    min-width: 0;
+    min-height: 46px;
+    padding: 10px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--field);
+    color: var(--ink);
+    font-size: 16px;
+  }
+  .small {
+    font-size: 13px;
+  }
+  .status {
+    font-size: 14px;
+    color: var(--ink-2);
+    min-height: 0;
+  }
+  .status:empty {
+    display: none;
+  }
+  @media (max-width: 420px) {
+    .row {
+      flex-direction: column;
+    }
+  }
+</style>

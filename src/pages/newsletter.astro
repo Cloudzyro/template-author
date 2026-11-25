@@ -1,0 +1,30 @@
+---
+import Base from "../layouts/Base.astro";
+import NewsletterForm from "../components/NewsletterForm.astro";
+import { author, newsletter } from "../data/site";
+---
+
+<Base title="Newsletter" description={`${newsletter.title}: a short letter from ${author.name}. ${newsletter.text}`}>
+  <section class="wrap nl">
+    <h1 class="display h1">{newsletter.title}</h1>
+    <p class="lede">{newsletter.text}</p>
+    <NewsletterForm />
+  </section>
+</Base>
+
+<style>
+  .nl {
+    display: grid;
+    gap: 24px;
+    justify-items: start;
+    padding-block: clamp(64px, 10vw, 128px) 160px;
+    max-width: 760px;
+    margin-left: max(24px, calc((100% - var(--wrap)) / 2));
+  }
+  @media (max-width: 480px) {
+    .nl {
+      margin-left: 16px;
+      margin-right: 16px;
+    }
+  }
+</style>

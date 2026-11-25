@@ -1,0 +1,72 @@
+---
+import DateStamp from "./DateStamp.astro";
+import type { Event } from "../data/site";
+
+interface Props {
+  list: Event[];
+  past?: boolean;
+}
+const { list, past = false } = Astro.props;
+---
+
+<ul class:list={["events", { past }]}>
+  {
+    list.map((e) => (
+      <li>
+        <DateStamp date={e.date} />
+        <div class="what">
+          <h3>{e.title}</h3>
+          <p>
+            {e.venue}, {e.city}
+            <span class="muted"> &middot; {e.time}</span>
+          </p>
+          {e.note && <p class="muted note">{e.note}</p>}
+        </div>
+        {!past && e.rsvp && (
+          <a class="btn btn-quiet" href={e.rsvp} rel="noopener">
+            RSVP<span class="sr"> for {e.title}</span>
+          </a>
+        )}
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  li {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+    gap: 24px;
+    align-items: center;
+    padding-block: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  li:first-child {
+    border-top: 1px solid var(--line-strong);
+  }
+  h3 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 1.2;
+  }
+  .what p {
+    color: var(--ink-2);
+    font-size: 16px;
+  }
+  .note {
+    font-size: 15px;
+  }
+  .past :global(.stamp) {
+    opacity: 0.6;
+  }
+  @media (max-width: 600px) {
+    li {
+      grid-template-columns: 88px minmax(0, 1fr);
+    }
+    li > .btn {
+      grid-column: 2;
+      justify-self: start;
+    }
+  }
+</style>

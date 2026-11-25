@@ -1,0 +1,123 @@
+---
+// A book jacket designed in code: color, a simple printed motif, title and author.
+// Proportions are a real trade hardcover (2:3), with a hint of spine at the left edge.
+import type { Book } from "../data/site";
+import { author } from "../data/site";
+
+interface Props {
+  book: Book;
+  size?: "s" | "m" | "l";
+}
+const { book, size = "m" } = Astro.props;
+const c = book.cover;
+const words = book.title.split(" ");
+---
+
+<div class:list={["cover", size]} role="img" aria-label={`Cover of ${book.title} by ${author.name}`}>
+  <svg viewBox="0 0 200 300" aria-hidden="true">
+    <rect width="200" height="300" fill={c.bg} />
+    {
+      c.motif === "tide" && (
+        <g fill="none" stroke={c.accent} stroke-width="1.6">
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+            <path d={`M-10 ${168 + i * 14} Q 40 ${158 + i * 14} 100 ${168 + i * 14} T 210 ${168 + i * 14}`} opacity={1 - i * 0.11} />
+          ))}
+          <rect x="74" y="120" width="52" height="36" fill={c.ink} stroke="none" opacity="0.92" />
+          <line x1="80" y1="130" x2="120" y2="130" stroke={c.bg} stroke-width="1.2" />
+          <line x1="80" y1="138" x2="112" y2="138" stroke={c.bg} stroke-width="1.2" />
+          <line x1="80" y1="146" x2="116" y2="146" stroke={c.bg} stroke-width="1.2" />
+        </g>
+      )
+    }
+    {
+      c.motif === "window" && (
+        <g>
+          <rect x="58" y="96" width="84" height="118" fill={c.ink} />
+          <rect x="64" y="102" width="34" height="52" fill={c.accent} />
+          <rect x="102" y="102" width="34" height="52" fill={c.bg} />
+          <rect x="64" y="158" width="34" height="50" fill={c.bg} />
+          <rect x="102" y="158" width="34" height="50" fill={c.bg} />
+          <circle cx="150" cy="84" r="8" fill={c.accent} opacity="0.85" />
+        </g>
+      )
+    }
+    {
+      c.motif === "rings" && (
+        <g fill="none" stroke={c.accent}>
+          {[10, 22, 34, 46, 58, 70].map((r, i) => (
+            <circle cx="100" cy="170" r={r} stroke-width={i % 2 ? 1 : 2} opacity={1 - i * 0.12} />
+          ))}
+          <path d="M84 162 h32 l-6 10 h-20 z" fill={c.ink} stroke="none" />
+        </g>
+      )
+    }
+    {
+      c.motif === "stems" && (
+        <g stroke={c.accent} stroke-width="1.6" fill="none">
+          {[60, 78, 96, 114, 132, 150].map((x, i) => (
+            <g>
+              <line x1={x} y1="236" x2={x + (i % 2 ? 6 : -4)} y2={140 + (i % 3) * 14} />
+              <ellipse cx={x + (i % 2 ? 6 : -4)} cy={136 + (i % 3) * 14} rx="5" ry="9" fill={c.accent} stroke="none" opacity="0.8" />
+            </g>
+          ))}
+          <line x1="40" y1="236" x2="160" y2="236" stroke={c.ink} />
+        </g>
+      )
+    }
+  </svg>
+  <div class="type" style={`color:${c.ink}`}>
+    <p class="title">
+      {words.map((w) => <span>{w}</span>)}
+    </p>
+    <p class="by">{author.name}</p>
+  </div>
+</div>
+
+<style>
+  .cover {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    border-radius: 2px 4px 4px 2px;
+    overflow: hidden;
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.12),
+      0 12px 28px rgb(20 20 30 / 0.16);
+    container-type: inline-size;
+  }
+  .cover::before {
+    /* the spine fold */
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4%;
+    background: linear-gradient(to right, rgb(0 0 0 / 0.22), rgb(255 255 255 / 0.08) 60%, rgb(0 0 0 / 0.05));
+    z-index: 1;
+  }
+  svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .type {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10cqw 9cqw 8cqw;
+    text-align: center;
+  }
+  .title {
+    font-family: var(--display);
+    font-size: 13cqw;
+    line-height: 1;
+    letter-spacing: 0;
+    display: grid;
+  }
+  .by {
+    font-family: var(--font);
+    font-size: 5.4cqw;
+    letter-spacing: 0.08em;
+  }
+</style>
